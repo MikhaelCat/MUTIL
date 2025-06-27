@@ -1,0 +1,46 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  web:
+    build: ./mutil-app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mutil-app:/app
+    env_file: ./.env
+    depends_on:
+      - db
+      - api
+    command: >
+      sh -c "
+        pip install -r requirements.txt &&
+        flask db init || true &&
+        flask db migrate -m 'initial migration' || true &&
+        flask db upgrade &&
+        gunicorn -w 4 -b 0.0.0.0:5000 'app:create_app()'
+      "
+
+  api:
+    build: ./mutil-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./mutil-api:/app
+    env_file: ./.env
+    command: >
+      sh -c "
+        pip install -r requirements.txt &&
+        uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      "
+
+  db:
+    image: postgres:14-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file: ./.env
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:

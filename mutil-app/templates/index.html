@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">MUTIL</h1>
+        <p class="hero-subtitle">Генератор Безумных Заданий</p>
+        <p class="hero-description">
+            Получи случайное креативное задание и поделись своим безумным ответом с миром!
+        </p>
+    </div>
+</div>
+
+<div class="main-container">
+    <div class="task-section">
+        <div class="card task-card">
+            <h2>🎯 Твоё Задание</h2>
+            <div id="task-display" class="task-display">
+                <p class="task-placeholder">Нажми кнопку, чтобы получить задание!</p>
+            </div>
+            <button id="get-task-btn" class="btn btn-primary">
+                <span class="btn-icon">🎲</span>
+                Получить Задание
+            </button>
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Генерируем безумное задание...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="submit-section" id="submit-section" style="display: none;">
+        <div class="card submit-card">
+            <h2>📝 Поделись Своим Ответом</h2>
+            <form id="submit-form" action="/api/submit" method="POST" enctype="multipart/form-data">
+                <input type="hidden" id="task-id" name="task_id">
+                
+                <div class="form-group">
+                    <label for="author_info">Как тебя зовут? (необязательно)</label>
+                    <input type="text" id="author_info" name="author_info" placeholder="Аноним" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    <label for="content">Твой ответ на задание:</label>
+                    <textarea id="content" name="content" rows="4" placeholder="Поделись своим креативным решением..." class="form-textarea" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="file">Прикрепить изображение (необязательно):</label>
+                    <input type="file" id="file" name="file" accept="image/*" class="form-file">
+                    <small class="form-hint">Максимальный размер: 5MB</small>
+                </div>
+                
+                <button type="submit" class="btn btn-success">
+                    <span class="btn-icon">🚀</span>
+                    Отправить в Галерею
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-tasks">0</div>
+                <div class="stat-label">Заданий создано</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-submissions">0</div>
+                <div class="stat-label">Ответов получено</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-votes">0</div>
+                <div class="stat-label">Голосов отдано</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🎭</div>
+            <h3>Безумные Задания</h3>
+            <p>Получай уникальные креативные вызовы, сгенерированные ИИ</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🖼️</div>
+            <h3>Галерея Ответов</h3>
+            <p>Смотри, как другие решают безумные задания</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">❤️</div>
+            <h3>Голосование</h3>
+            <p>Голосуй за самые креативные и смешные ответы</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>Telegram Бот</h3>
+            <p>Получай задания прямо в Telegram</p>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentTaskId = null;
+
+document.getElementById('get-task-btn').addEventListener('click', async function() {
+    const button = this;
+    const loading = document.getElementById('loading');
+    const taskDisplay = document.getElementById('task-display');
+    const submitSection = document.getElementById('submit-section');
+    
+    button.style.display = 'none';
+    loading.style.display = 'block';
+    
+    try {
+        const response = await fetch('/api/get-task');
+        const data = await response.json();
+        
+        if (data.id && data.text) {
+            currentTaskId = data.id;
+            document.getElementById('task-id').value = data.id;
+            
+            taskDisplay.innerHTML = `
+                <div class="task-text">
+                    <span class="task-emoji">🎯</span>
+                    <p>"${data.text}"</p>
+                </div>
+            `;
+            
+            submitSection.style.display = 'block';
+            
+            submitSection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            throw new Error('Неверный формат ответа');
+        }
+    } catch (error) {
+        console.error('Ошибка получения задания:', error);
+        taskDisplay.innerHTML = `
+            <div class="error-message">
+                <span class="error-emoji">😕</span>
+                <p>Не удалось получить задание. Попробуй ещё раз!</p>
+            </div>
+        `;
+        button.style.display = 'inline-flex';
+    } finally {
+        loading.style.display = 'none';
+    }
+});
+
+// Загрузка статистики
+async function loadStats() {
+    try {
+        const response = await fetch('/api/stats');
+        const stats = await response.json();
+        
+        document.getElementById('total-tasks').textContent = stats.total_tasks || 0;
+        document.getElementById('total-submissions').textContent = stats.total_submissions || 0;
+        document.getElementById('total-votes').textContent = stats.total_votes || 0;
+    } catch (error) {
+        console.error('Ошибка загрузки статистики:', error);
+    }
+}
+
+// Загружаем статистику при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadStats);
+</script>
+{% endblock %}
