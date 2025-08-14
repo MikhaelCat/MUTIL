@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from app.api.deps import get_db
 from app.schemas.schemas import ResponseCreate, Response, ResponseUpdate
 from app.services.response_service import create_response, get_response, get_responses, get_responses_for_task, update_response, delete_response, save_response_image
+from pydantic import BaseModel 
 
 
 class ResponseCreateWithFile(BaseModel):
@@ -87,4 +88,5 @@ def delete_existing_response(response_id: int, db: Session = Depends(get_db)):
     success = delete_response(db, response_id)
     if not success:
         raise HTTPException(status_code=404, detail="Response not found")
+
     return
