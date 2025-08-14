@@ -1,0 +1,46 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+before_script:
+  - docker info
+
+services:
+  - docker:dind
+
+test:
+  stage: test
+  image: python:3.11
+  before_script:
+    - pip install -r backend/requirements.txt
+  script:
+    - cd backend
+    - pytest tests/
+  only:
+    - merge_requests
+    - main
+
+build:
+  stage: build
+  image: docker:latest
+  script:
+    - docker build -t mutil-backend:$CI_COMMIT_SHA ./backend
+    - docker build -t mutil-bot:$CI_COMMIT_SHA ./bot
+    - docker build -t mutil-frontend:$CI_COMMIT_SHA ./frontend
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image: docker:latest
+  script:
+    - echo "Deploying to production..."
+    # Здесь будет логика деплоя, например, на сервер или в облако
+  only:
+    - main
+  when: manual
