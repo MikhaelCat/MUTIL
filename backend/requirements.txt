@@ -11,7 +11,7 @@ python-multipart>=0.0.6,<0.1.0
 python-jose[cryptography]>=3.3.0,<4.0.0
 passlib[bcrypt]>=1.7.4,<2.0.0
 email-validator>=2.1.0,<3.0.0
-httpx>=0.25.0,<0.26.0
+httpx>=0.25.0,<0.29.0
 Pillow>=10.0.1,<11.0.0
 flask>=3.0.0,<4.0.0
 flask-sqlalchemy>=3.1.1,<4.0.0
@@ -19,5 +19,5 @@ flask-login>=0.6.3,<1.0.0
 
 # Для тестов
 pytest>=7.4.3,<8.0.0
-httpx>=0.25.0,<0.26.0
+httpx>=0.25.0,<0.29.0
 pytest-env>=0.6.2,<1.0.0 
