@@ -85,3 +85,51 @@ class TopResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class CommentBase(BaseModel):
+    content: str
+
+class CommentCreate(CommentBase):
+    response_id: int
+
+class Comment(CommentBase):
+    id: int
+    created_at: datetime
+    author_id: int
+    response_id: int
+
+    class Config:
+        from_attributes = True
+
+class TagBase(BaseModel):
+    name: str
+
+class TagCreate(TagBase):
+    pass
+
+class Tag(TagBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+#репорты
+class ReportBase(BaseModel):
+    reason: str
+    description: Optional[str] = None
+
+class ReportCreate(ReportBase):
+    response_id: Optional[int] = None
+    task_id: Optional[int] = None
+
+class Report(ReportBase):
+    id: int
+    created_at: datetime
+    status: str
+    reporter_id: int
+    response_id: Optional[int] = None
+    task_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True

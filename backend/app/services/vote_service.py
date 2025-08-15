@@ -4,6 +4,23 @@ from sqlalchemy.orm import Session
 from app.models.models import Vote, Response
 from app.schemas.schemas import VoteCreate
 from app.core.config import redis_client
+from datetime import datetime, timedelta
+from sqlalchemy import func
+
+def calculate_hot_score(votes_count: int, created_at: datetime) -> float:
+    """Рассчитывает 'горячий' рейтинг как на Reddit."""
+    hours_since_creation = (datetime.utcnow() - created_at).total_seconds() / 3600
+    return votes_count / ((hours_since_creation + 2) ** 1.8)
+
+def update_response_hot_score_cache(response_id: int, db: Session):
+    """Обновляет 'горячий' рейтинг ответа в Redis."""
+    response = db.query(Response).filter(Response.id == response_id).first()
+    if response:
+        votes = db.query(Vote).filter(Vote.response_id == response_id).all()
+        votes_count = len(votes)
+        hot_score = calculate_hot_score(votes_count, response.created_at)
+        redis_client.hset(f"response:{response_id}", "hot_score", hot_score)
+        redis_client.hset(f"response:{response_id}", "votes_count", votes_count)
 
 def create_vote(db: Session, vote: VoteCreate, user_id: int) -> Vote:
     """Создает новый голос."""
@@ -11,10 +28,7 @@ def create_vote(db: Session, vote: VoteCreate, user_id: int) -> Vote:
     db.add(db_vote)
     db.commit()
     db.refresh(db_vote)
-    
-    # Обновляем рейтинг ответа в Redis
     update_response_score_cache(vote.response_id, db)
-    
     return db_vote
 
 def get_vote(db: Session, vote_id: int) -> Optional[Vote]:
@@ -31,12 +45,8 @@ def update_response_score_cache(response_id: int, db: Session):
     if response:
         votes = db.query(Vote).filter(Vote.response_id == response_id).all()
         score = sum(vote.value for vote in votes)
-        
-        # Сохраняем в Redis
         redis_client.hset(f"response:{response_id}", "score", score)
         redis_client.hset(f"response:{response_id}", "votes_count", len(votes))
-        
-        # Обновляем список топовых ответов
         update_top_responses_cache(db)
 
 def update_top_responses_cache(db: Session, limit: int = 10):

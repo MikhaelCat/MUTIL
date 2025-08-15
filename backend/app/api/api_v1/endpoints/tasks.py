@@ -32,3 +32,36 @@ def read_tasks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Получает список заданий."""
     tasks = get_tasks(db, skip=skip, limit=limit)
     return tasks
+
+@router.post("/generate", response_model=Task, status_code=status.HTTP_201_CREATED)
+def generate_task(
+    prompt: Optional[str] = None,
+    category: Optional[TaskCategory] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Генерирует случайное задание.
+    
+    ### Параметры:
+    - **prompt**: Тема для генерации задания (опционально)
+    - **category**: Категория задания (опционально)
+    
+    ### Ответ:
+    - **id**: ID задания
+    - **text**: Текст задания
+    - **created_at**: Дата создания
+    
+    ### Примеры:
+    ```json
+    {
+      "text": "Напиши письмо своему холодильнику."
+    }
+    ```
+    """
+    if prompt:
+        task_text = generate_task_with_ai(prompt)
+    else:
+        task_text = generate_random_task(category)
+    
+    task_in = TaskCreate(text=task_text)
+    return create_task(db, task_in)
