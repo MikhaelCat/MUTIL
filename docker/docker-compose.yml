@@ -44,6 +44,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       MEDIA_ROOT: /app/media
+      SECRET_KEY: ${SECRET_KEY}
     depends_on:
       db:
         condition: service_healthy
@@ -52,6 +53,11 @@ services:
     volumes:
       - ../backend:/app  
       - backend_media:/app/media  
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     command: uvicorn app.main:fastapi_app --host 0.0.0.0 --port 8000 --reload
 
   bot:
@@ -65,7 +71,11 @@ services:
       - backend
     volumes:
       - ../bot:/app  
-    command: python bot.py
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import telegram; print(\"OK\")'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
     build:
@@ -77,6 +87,12 @@ services:
       - backend
     volumes:
       - ../frontend:/usr/share/nginx/html  
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   postgres_data:
   redis_data:
