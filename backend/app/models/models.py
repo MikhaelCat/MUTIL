@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Bool
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
+from sqlalchemy.orm import Session
 
 class Task(Base):
     __tablename__ = "tasks"
@@ -204,4 +205,5 @@ class UserBadge(Base):
     earned_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User")
+
     badge = relationship("Badge")
