@@ -110,6 +110,7 @@ class Achievement(Base):
     name = Column(String, unique=True)
     description = Column(Text)
     points = Column(Integer, default=0)
+    icon = Column(String)
 
 class UserAchievement(Base):
     __tablename__ = "user_achievements"
@@ -155,15 +156,6 @@ class TaskTag(Base):
     task_id = Column(Integer, ForeignKey("tasks.id"), primary_key=True)
     tag_id = Column(Integer, ForeignKey("tags.id"), primary_key=True)
 
-class Achievement(Base):
-    __tablename__ = "achievements"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True)
-    description = Column(Text)
-    points = Column(Integer, default=0)
-    icon = Column(String)  
-
 class UserAchievement(Base):
     __tablename__ = "user_achievements"
 
@@ -207,3 +199,4 @@ class UserBadge(Base):
     user = relationship("User")
 
     badge = relationship("Badge")
+
