@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from app.api.deps import get_db
 from app.schemas.schemas import TaskCreate, Task
 from app.services.task_service import generate_random_task, create_task, get_task, get_tasks
@@ -64,4 +64,5 @@ def generate_task(
         task_text = generate_random_task(category)
     
     task_in = TaskCreate(text=task_text)
+
     return create_task(db, task_in)
