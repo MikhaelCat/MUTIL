@@ -60,6 +60,8 @@ def generate_task_with_ai(prompt: Optional[str] = None) -> str:
         # Если нет API ключа, возвращаем случайное задание
         return generate_random_task()
     
+    from openai import OpenAI
+    
     client = OpenAI(api_key=settings.OPENAI_API_KEY)
     
     base_prompt = "Сгенерируй творческое задание для пользователя. Задание должно быть необычным, веселым и вдохновляющим. Ответ должен содержать только само задание, без дополнительных пояснений."
@@ -101,4 +103,5 @@ def get_task(db: Session, task_id: int) -> Optional[Task]:
 
 def get_tasks(db: Session, skip: int = 0, limit: int = 100) -> List[Task]:
     """Получает список заданий."""
+
     return db.query(Task).offset(skip).limit(limit).all()
