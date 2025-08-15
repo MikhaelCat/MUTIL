@@ -1,16 +1,28 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional  
+from datetime import timedelta  
 from app.api.deps import get_db
 from app.schemas.schemas import TaskCreate, Task
-from app.services.task_service import generate_random_task, create_task, get_task, get_tasks
+from app.services.task_service import generate_random_task, generate_task_with_ai, create_task, get_task, get_tasks
 
 router = APIRouter()
 
 @router.post("/generate", response_model=Task, status_code=status.HTTP_201_CREATED)
-def generate_task(db: Session = Depends(get_db)):
-    """Генерирует случайное задание и сохраняет его в БД."""
-    task_text = generate_random_task()
+def generate_task(
+    prompt: Optional[str] = None,
+    category: Optional[str] = None,  
+    db: Session = Depends(get_db)
+):
+    """
+    Генерирует случайное задание.
+    """
+    if prompt:
+        task_text = generate_task_with_ai(prompt)
+    else:
+        # task_text = generate_random_task(TaskCategory(category) if category else None)
+        task_text = generate_random_task()  
+    
     task_in = TaskCreate(text=task_text)
     return create_task(db, task_in)
 
@@ -66,3 +78,4 @@ def generate_task(
     task_in = TaskCreate(text=task_text)
 
     return create_task(db, task_in)
+
