@@ -4,9 +4,25 @@ from typing import List, Optional
 from datetime import timedelta  
 from app.api.deps import get_db
 from app.schemas.schemas import TaskCreate, Task
-from app.services.task_service import generate_random_task, generate_task_with_ai, create_task, get_task, get_tasks
+from enum import Enum
+from app.services.task_service import (
+    generate_random_task, 
+    generate_task_with_ai,  
+    create_task, 
+    get_task, 
+    get_tasks
+)
 
 router = APIRouter()
+
+class TaskCategory(str, Enum):
+    CREATIVE = "creative"
+    PHOTO = "photo"
+    WRITING = "writing"
+    MUSIC = "music"
+    DRAWING = "drawing"
+    ACTING = "acting"
+
 
 @router.post("/generate", response_model=Task, status_code=status.HTTP_201_CREATED)
 def generate_task(
@@ -78,4 +94,5 @@ def generate_task(
     task_in = TaskCreate(text=task_text)
 
     return create_task(db, task_in)
+
 
