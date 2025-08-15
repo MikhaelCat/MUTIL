@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func  
 from app.models.models import Task, Response, User
 from typing import List
 
